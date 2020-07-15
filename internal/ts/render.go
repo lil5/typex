@@ -56,10 +56,12 @@ func (r *TypeRender) Render(m typex.TypeMap, exportObj bool) typex.PathMap {
 		}
 		r.writeType(ctx, typ)
 
+		nameM := r.nameWithoutMod(name)
+
 		if exClass {
-			pathMap[path] = "export class " + name + " " + buf.String()
+			pathMap[path] = "export class " + nameM + " " + buf.String()
 		} else {
-			pathMap[path] = "export type " + name + " = " + buf.String()
+			pathMap[path] = "export type " + nameM + " = " + buf.String()
 		}
 	}
 	return pathMap
@@ -134,7 +136,8 @@ func (r *TypeRender) writeNamed(ctx context, t *types.Named) {
 			p = strings.ReplaceAll(p, "/", ".")
 		}
 	}
-	r.write(ctx, p)
+	pM := r.nameWithoutMod(p)
+	r.write(ctx, pM)
 }
 
 func (r *TypeRender) writeMap(ctx context, t *types.Map) {
@@ -171,6 +174,7 @@ func (r *TypeRender) writeStruct(ctx context, t *types.Struct) {
 		fld := t.Field(i)
 		typ := fld.Type()
 		name := fld.Name()
+		nameM := r.nameWithoutMod(name)
 
 		if !r.isExported(name) {
 			continue
@@ -188,7 +192,7 @@ func (r *TypeRender) writeStruct(ctx context, t *types.Struct) {
 		if tag != "" {
 			r.write(ctx, tag)
 		} else {
-			r.write(ctx, name)
+			r.write(ctx, nameM)
 		}
 		if opt.Contains("omitempty") {
 			r.write(ctx, "?")
@@ -231,6 +235,10 @@ func (r *TypeRender) pathAndName(s string) (p, n string) {
 		p = p[:i] + "/" + n
 	}
 	return p, n
+}
+
+func (r *TypeRender) nameWithoutMod(s string) string {
+	return strings.Replace(s, "command_line_arguments.", "", 1)
 }
 
 func (r *TypeRender) replacePath(s string) string {
