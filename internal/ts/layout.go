@@ -5,7 +5,6 @@ package ts
 import (
 	"fmt"
 	"io"
-	"strings"
 
 	typex "github.com/dtgorski/typex/internal"
 )
@@ -23,21 +22,15 @@ func NewModuleLayout(w io.Writer) typex.Layout {
 }
 
 func (m *moduleLayout) Enter(path string, _ bool) {
-	i := strings.LastIndex(path, "/")
-	p := strings.Repeat(" ", m.indent<<2)
-	m.write(m.writer, "%sexport module %s {\n", p, path[i+1:])
 	m.indent++
 }
 
 func (m *moduleLayout) Print(line string, _, _ bool) {
-	p := strings.Repeat(" ", m.indent<<2)
-	m.write(m.writer, "%s%s\n", p, line)
+	m.write(m.writer, "%s%s\n", "", line)
 }
 
-func (m *moduleLayout) Leave(_ string, _ bool) {
+func (m *moduleLayout) Leave(path string, _ bool) {
 	m.indent--
-	p := strings.Repeat(" ", m.indent<<2)
-	m.write(m.writer, "%s}\n", p)
 }
 
 func (moduleLayout) write(w io.Writer, f string, a ...interface{}) {
